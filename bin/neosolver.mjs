@@ -16,6 +16,19 @@ import { loadConfig, ConfigError, ConfigValueError, describeConfig } from '../sr
 import { createServer } from '../src/server.mjs';
 import { createLogger } from '../src/log.mjs';
 
+// Automatically load neosolver.env or .env if present (supports Windows and direct node invocations)
+if (typeof process.loadEnvFile === 'function') {
+  for (const envFile of ['neosolver.env', '.env']) {
+    try {
+      if (fs.existsSync(envFile)) {
+        process.loadEnvFile(envFile);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
 const HELP = `NeoSolver ${pkg.version} — terminal-only challenge solver service
@@ -47,12 +60,12 @@ Required environment variables (see neosolver.env.example):
                              NEOSOLVER_PROVIDER_KEY_FILE (file holding the raw key)
                            Never logged, never returned in any response.
 
-Optional: NEOSOLVER_ALLOWED_MODELS, NEOSOLVER_HOST (default 127.0.0.1),
-NEOSOLVER_PORT (default 8787), NEOSOLVER_MAX_BODY (1048576),
-NEOSOLVER_TIMEOUT_MS (120000), NEOSOLVER_MAX_FILES (64),
-NEOSOLVER_MAX_TOTAL_BYTES (4194304), NEOSOLVER_TEST_COMMAND (npm test),
-NEOSOLVER_LOG_LEVEL (info), NEOSOLVER_PIDFILE,
-NEOSOLVER_FALLBACK_MODEL (empty disables the fallback),
+Optional: NEOSOLVER_ALLOWED_MODELS, NEOSOLVER_REASONING_EFFORT (low|medium|high),
+NEOSOLVER_HOST (default 127.0.0.1), NEOSOLVER_PORT (default 8787),
+NEOSOLVER_MAX_BODY (1048576), NEOSOLVER_TIMEOUT_MS (120000),
+NEOSOLVER_MAX_FILES (64), NEOSOLVER_MAX_TOTAL_BYTES (4194304),
+NEOSOLVER_TEST_COMMAND (npm test), NEOSOLVER_LOG_LEVEL (info),
+NEOSOLVER_PIDFILE, NEOSOLVER_FALLBACK_MODEL (empty disables the fallback),
 NEOSOLVER_MAX_CONCURRENCY (8), NEOSOLVER_QUEUE_LIMIT (32),
 NEOSOLVER_LOG_FILE (empty = stderr only), NEOSOLVER_LOG_MAX_BYTES (5242880).
 `;

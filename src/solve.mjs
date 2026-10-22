@@ -67,9 +67,9 @@ function worthFallingBack(error) {
  *
  * @param {{model: string, messages: Array<object>, targets: string[], config: object, fetchImpl?: Function, logger: object, testFileBytes: number}} request
  */
-async function attempt({ model, messages, targets, config, fetchImpl, logger, testFileBytes }) {
-  logger.debug('calling provider', { model, testFileBytes });
-  const completion = await callChatCompletion({ config, model, messages, fetchImpl, logger });
+async function attempt({ model, messages, targets, config, fetchImpl, logger, testFileBytes, reasoningEffort }) {
+  logger.debug('calling provider', { model, testFileBytes, ...(reasoningEffort ? { reasoningEffort } : {}) });
+  const completion = await callChatCompletion({ config, model, messages, fetchImpl, logger, reasoningEffort });
 
   const parsed = parseReply(completion.content, { targets });
   if (!parsed) {
@@ -96,10 +96,10 @@ async function attempt({ model, messages, targets, config, fetchImpl, logger, te
 }
 
 /**
- * @param {{testFile: string, targets?: string[], model?: string, config: object, fetchImpl?: Function, logger: object}} request
+ * @param {{testFile: string, targets?: string[], model?: string, reasoningEffort?: string|null, config: object, fetchImpl?: Function, logger: object}} request
  * @returns {Promise<{files: Array<{path: string, content: string}>, notes: string, usage: object|null, model: string|null, strategy: number, fellBack: boolean, attempts: string[]}>}
  */
-export async function solve({ testFile, targets = [], model, config, fetchImpl, logger }) {
+export async function solve({ testFile, targets = [], model, reasoningEffort, config, fetchImpl, logger }) {
   const messages = buildMessages({ testFile, targets });
   const primary = model ?? config.model;
   const fallback = config.fallbackModel ?? '';
@@ -107,7 +107,7 @@ export async function solve({ testFile, targets = [], model, config, fetchImpl, 
   const testFileBytes = Buffer.byteLength(testFile, 'utf8');
 
   try {
-    const result = await attempt({ model: primary, messages, targets, config, fetchImpl, logger, testFileBytes });
+    const result = await attempt({ model: primary, messages, targets, config, fetchImpl, logger, testFileBytes, reasoningEffort });
     return { ...result, fellBack: false, attempts: [primary] };
   } catch (primaryError) {
     if (!canFallBack || !worthFallingBack(primaryError)) throw primaryError;
@@ -119,7 +119,7 @@ export async function solve({ testFile, targets = [], model, config, fetchImpl, 
       detail: primaryError.message,
     });
 
-    const result = await attempt({ model: fallback, messages, targets, config, fetchImpl, logger, testFileBytes });
+    const result = await attempt({ model: fallback, messages, targets, config, fetchImpl, logger, testFileBytes, reasoningEffort });
     return { ...result, fellBack: true, attempts: [primary, fallback] };
   }
 }

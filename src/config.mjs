@@ -24,6 +24,7 @@ export const DEFAULTS = Object.freeze({
   logFile: '', // empty = stderr only
   logMaxBytes: 5 * 1024 * 1024, // rotate to <file>.1 past this; 0 disables
   testCommand: 'npm test',
+  reasoningEffort: '', // e.g. 'low', 'medium', 'high' for reasoning models
 });
 
 /** Required variable names, in the order they are reported to the operator. */
@@ -147,6 +148,10 @@ export function loadConfig(env = process.env) {
 
   const providerUrl = env.NEOSOLVER_PROVIDER_URL.trim();
 
+  const reasoningEffort = nonEmpty(env.NEOSOLVER_REASONING_EFFORT)
+    ? env.NEOSOLVER_REASONING_EFFORT.trim()
+    : (nonEmpty(env.NEOSOLVER_REASONING) ? env.NEOSOLVER_REASONING.trim() : DEFAULTS.reasoningEffort);
+
   return shapeConfig({
     token: nonEmpty(env.NEOSOLVER_TOKEN) ? env.NEOSOLVER_TOKEN : null,
     allowAnon,
@@ -157,6 +162,7 @@ export function loadConfig(env = process.env) {
     model: env.NEOSOLVER_MODEL.trim(),
     fallbackModel,
     allowedModels,
+    reasoningEffort,
     host: nonEmpty(env.NEOSOLVER_HOST) ? env.NEOSOLVER_HOST.trim() : DEFAULTS.host,
     port: intFrom(env, 'NEOSOLVER_PORT', DEFAULTS.port, { min: 0, max: 65535 }),
     maxBody: intFrom(env, 'NEOSOLVER_MAX_BODY', DEFAULTS.maxBody, { min: 1 }),
@@ -204,6 +210,7 @@ export function describeConfig(config) {
     model: config.model,
     fallbackModel: config.fallbackModel || '(none)',
     allowedModels: config.allowedModels.length > 0 ? config.allowedModels.join(',') : '(any)',
+    reasoningEffort: config.reasoningEffort || '(none)',
     maxBody: `${config.maxBody} bytes`,
     maxConcurrency: config.maxConcurrency,
     queueLimit: config.queueLimit,

@@ -82,7 +82,7 @@ export function extractContent(body) {
  * Call the provider once, returning the decoded chat-completion body.
  * @returns {Promise<{content: string, usage: object|null, model: string|null, response: object}>}
  */
-async function attemptOnce({ config, model, messages, fetchImpl, logger, attempt }) {
+async function attemptOnce({ config, model, messages, fetchImpl, logger, attempt, reasoningEffort }) {
   const url = config.providerUrlResolved;
   const controller = new AbortController();
   let timedOut = false;
@@ -91,7 +91,13 @@ async function attemptOnce({ config, model, messages, fetchImpl, logger, attempt
     controller.abort();
   }, config.timeoutMs);
 
-  logger.debug('provider call', { attempt, url, model });
+  const effort = reasoningEffort ?? config?.reasoningEffort;
+  logger.debug('provider call', { attempt, url, model, ...(effort ? { reasoningEffort: effort } : {}) });
+
+  const payload = { model, messages, stream: false };
+  if (effort) {
+    payload.reasoning_effort = effort;
+  }
 
   let response;
   try {
@@ -102,7 +108,7 @@ async function attemptOnce({ config, model, messages, fetchImpl, logger, attempt
         authorization: `Bearer ${config.providerKey}`,
         accept: 'application/json',
       },
-      body: JSON.stringify({ model, messages, stream: false }),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
   } catch (error) {
@@ -174,6 +180,7 @@ export async function callChatCompletion({
   fetchImpl = globalThis.fetch,
   logger,
   backoffMs = RETRY_BACKOFF_MS,
+  reasoningEffort,
 }) {
   if (typeof fetchImpl !== 'function') {
     throw providerError('no fetch implementation available (Node >= 20 required)');
@@ -182,7 +189,7 @@ export async function callChatCompletion({
   let lastError;
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
-      return await attemptOnce({ config, model, messages, fetchImpl, logger, attempt });
+      return await attemptOnce({ config, model, messages, fetchImpl, logger, attempt, reasoningEffort });
     } catch (error) {
       lastError = error;
       if (error?.retryable !== true || attempt === 2) throw error;

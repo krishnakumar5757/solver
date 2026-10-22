@@ -492,6 +492,8 @@ export function createServer(config, { fetchImpl = globalThis.fetch, logger } = 
     }
 
     const model = resolveModel(config, query.get('model') || null);
+    const reasoningEffort =
+      query.get('reasoning') ?? query.get('reasoning_effort') ?? (config.reasoningEffort || null);
     const targets = readTargets(req, query);
 
     let testCommand = config.testCommand;
@@ -540,7 +542,7 @@ export function createServer(config, { fetchImpl = globalThis.fetch, logger } = 
 
       let solution;
       try {
-        solution = await solve({ testFile, targets, model, config, fetchImpl, logger: log });
+        solution = await solve({ testFile, targets, model, reasoningEffort, config, fetchImpl, logger: log });
       } catch (error) {
         if (!streaming) throw error;
         stopHeartbeat();
@@ -572,6 +574,7 @@ export function createServer(config, { fetchImpl = globalThis.fetch, logger } = 
         format,
         model: solution.model ?? model,
         fellBack: solution.fellBack ? 'yes' : 'no',
+        reasoningEffort: reasoningEffort ?? '(none)',
         files: solution.files.length,
         names: namesField,
         strategy: solution.strategy,
