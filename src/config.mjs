@@ -163,8 +163,15 @@ export function loadConfig(env = process.env) {
     fallbackModel,
     allowedModels,
     reasoningEffort,
-    host: nonEmpty(env.NEOSOLVER_HOST) ? env.NEOSOLVER_HOST.trim() : DEFAULTS.host,
-    port: intFrom(env, 'NEOSOLVER_PORT', DEFAULTS.port, { min: 0, max: 65535 }),
+    host: nonEmpty(env.NEOSOLVER_HOST)
+      ? env.NEOSOLVER_HOST.trim()
+      : (env.RENDER || env.PORT ? '0.0.0.0' : DEFAULTS.host),
+    port: intFrom(
+      env,
+      'NEOSOLVER_PORT',
+      intFrom(env, 'PORT', DEFAULTS.port, { min: 0, max: 65535 }),
+      { min: 0, max: 65535 },
+    ),
     maxBody: intFrom(env, 'NEOSOLVER_MAX_BODY', DEFAULTS.maxBody, { min: 1 }),
     maxConcurrency: intFrom(env, 'NEOSOLVER_MAX_CONCURRENCY', DEFAULTS.maxConcurrency, { min: 1 }),
     queueLimit: intFrom(env, 'NEOSOLVER_QUEUE_LIMIT', DEFAULTS.queueLimit, { min: 0 }),

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f3f5fb">
+  <title>Alex Morgan — Profile</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <article class="profile-card">
+      <div class="card-accent" aria-hidden="true"></div>
+
+      <img
+        class="avatar"
+        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&amp;fit=crop&amp;w=320&amp;h=320&amp;q=85"
+        alt="Portrait of Alex Morgan smiling"
+      >
+
+      <span class="status"><span class="status-dot"></span> Available for projects</span>
+      <h1 class="user-name">Alex Morgan</h1>
+      <p class="user-role">Product designer <span aria-hidden="true">·</span> Portland, OR</p>
+      <p class="user-bio">
+        I turn complex problems into thoughtful, human-centered digital experiences.
+        Currently making good things at <strong>Northstar Studio</strong>.
+      </p>
+
+      <div class="stats" aria-label="Profile statistics">
+        <div><strong>8</strong><span>Years exp.</span></div>
+        <div><strong>24</strong><span>Projects</span></div>
+        <div><strong>12k</strong><span>Followers</span></div>
+      </div>
+
+      <div class="card-actions">
+        <a class="contact-link" href="mailto:hello@example.com">Get in touch <span aria-hidden="true">↗</span></a>
+        <button id="theme-btn" type="button" aria-label="Switch to dark theme" aria-pressed="false">
+          <span class="theme-icon" aria-hidden="true">☾</span>
+          <span class="theme-label">Dark mode</span>
+        </button>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    const themeButton = document.querySelector("#theme-btn");
+
+    themeButton.addEventListener("click", () => {
+      const isDark = document.body.classList.toggle("dark-theme");
+      themeButton.setAttribute("aria-pressed", String(isDark));
+      themeButton.setAttribute(
+        "aria-label",
+        isDark ? "Switch to light theme" : "Switch to dark theme"
+      );
+      themeButton.querySelector(".theme-icon").textContent = isDark ? "☀" : "☾";
+      themeButton.querySelector(".theme-label").textContent = isDark ? "Light mode" : "Dark mode";
+    });
+  </script>
+</body>
+</html>

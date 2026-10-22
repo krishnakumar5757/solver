@@ -16,6 +16,7 @@ logs/
 
 # Local overrides / scratch output.
 *.log
+tunnel_url.txt
 tmp/
 .tmp/
 scratch/

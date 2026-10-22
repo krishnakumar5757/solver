@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: neosolver
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node bin/neosolver.mjs serve
+    healthCheckPath: /healthz
+    envVars:
+      - key: NEOSOLVER_HOST
+        value: 0.0.0.0
+      - key: NEOSOLVER_TOKEN
+        value: cyber
+      - key: NEOSOLVER_PROVIDER_URL
+        value: https://api.openai.com/v1
+      - key: NEOSOLVER_MODEL
+        value: gpt-6-luna
+      - key: NEOSOLVER_REASONING_EFFORT
+        value: medium
+      - key: NEOSOLVER_PROVIDER_KEY
+        sync: false
